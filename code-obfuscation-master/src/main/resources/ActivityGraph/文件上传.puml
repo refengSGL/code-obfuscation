@@ -1,0 +1,17 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+:动态获取原始文件的后缀;
+:利用UUID随机生成文件名;
+:通过存储路径获取目录对象;
+if (目录对象存在?) is (yes) then
+
+else (no)
+  :根据存储地址创建目录;
+:将临时文件存储到指定位置;
+endif
+
+stop
+
+@enduml
