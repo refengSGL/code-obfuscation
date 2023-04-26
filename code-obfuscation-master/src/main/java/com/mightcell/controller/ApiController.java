@@ -110,6 +110,7 @@ public class ApiController {
             log.info("The upload file name contains invalid characters");
             throw new CodeException("上传文件名包含非法字符");
         }
+
         // 获取文件名部分
         String safeFilename = FilenameUtils.getName(originalFilename);
         if (!originalFilename.equals(safeFilename)) {
