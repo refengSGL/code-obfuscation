@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
-    <mapping directory="$PROJECT_DIR$" vcs="" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/code-obfuscation-master/src/main/resources/myapp5" vcs="" />
     <mapping directory="$PROJECT_DIR$/code-obfuscation-master/src/main/resources/myapp5/opaque" vcs="" />
-    <mapping directory="$PROJECT_DIR$/myapp5" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/myapp5/opaque" vcs="Git" />
   </component>
 </project>
