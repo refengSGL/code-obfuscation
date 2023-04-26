@@ -14,10 +14,12 @@ import com.mightcell.exception.CodeException;
 import com.mightcell.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.omg.PortableInterceptor.SUCCESSFUL;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
+import static com.mightcell.constant.ResultCode.*;
 import static com.mightcell.constant.UserConstant.IS_LOGOUT;
 
 /**
@@ -51,24 +53,24 @@ public class UserController {
             StpUtil.login(user.getId());
             StpUtil.getSession().set("user", user);
             SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
-            return SaResult.ok("登录成功").setData(tokenInfo);
+            return SaResult.ok("登录成功").setData(tokenInfo).setCode(SUCCESS);
         }
-        return SaResult.error("登录失败");
+        return SaResult.error("登录失败").setCode(ERROR);
     }
 
     /**
      * 用户注册
      *
-     * @param registerBo
+     * @param registerBo 用户信息注册接收类
      * @return 注册结果信息
      */
     @PostMapping("/register")
     public SaResult userRegister(@RequestBody RegisterBo registerBo) {
         int count = userService.userRegister(registerBo);
         if (count != 1) {
-            return SaResult.error("注册失败");
+            return SaResult.error("注册失败").setCode(ERROR);
         }
-        return SaResult.ok("注册成功");
+        return SaResult.ok("注册成功").setCode(NO_CONTENT);
     }
 
     /**
@@ -83,18 +85,18 @@ public class UserController {
         user.setIsLogin(IS_LOGOUT);
         userService.updateById(user);
         StpUtil.logout(user.getId());
-        return SaResult.ok("退出成功");
+        return SaResult.ok("退出成功").setCode(NO_CONTENT);
     }
 
     @GetMapping("/status")
     public SaResult userLoginStatus() {
-        return SaResult.ok("是否登录：" + StpUtil.isLogin());
+        return SaResult.ok("是否登录：" + StpUtil.isLogin()).setCode(SUCCESS);
     }
 
     @GetMapping("/query/{id}")
     public SaResult getUserInfoById(@PathVariable Long id) {
         User user = userService.getUserInfoById(id);
-        return SaResult.ok("获取成功").setData(user.getUserVo());
+        return SaResult.ok("获取成功").setData(user.getUserVo()).setCode(SUCCESS);
     }
 
     /**
@@ -105,9 +107,9 @@ public class UserController {
     public SaResult getCurrentLoginUser() {
         UserVo userVo = userService.getCurrentUserInfo();
         if (!Objects.isNull(userVo)) {
-            return SaResult.ok("获取成功").setData(userVo);
+            return SaResult.ok("获取成功").setData(userVo).setCode(SUCCESS);
         }
-        return SaResult.ok("获取失败");
+        return SaResult.ok("获取失败").setCode(ERROR);
     }
 
     /**
@@ -119,9 +121,9 @@ public class UserController {
     public SaResult updateById(@RequestBody User user) {
         boolean result = userService.updateByUserId(user);
         if (result) {
-            return SaResult.ok("修改成功");
+            return SaResult.ok("修改成功").setCode(NO_CONTENT);
         }
-        return SaResult.error("修改失败");
+        return SaResult.error("修改失败").setCode(ERROR);
     }
 
 
@@ -133,8 +135,8 @@ public class UserController {
         }
         PageInfo<UserPageDto> pageDtoPageInfo = userService.getUserDtoInfo(pageBo);
         if (!Objects.isNull(pageDtoPageInfo)){
-            return SaResult.ok("获取成功").setData(pageDtoPageInfo);
+            return SaResult.ok("获取成功").setData(pageDtoPageInfo).setCode(SUCCESS);
         }
-        return SaResult.error("获取失败");
+        return SaResult.error("获取失败").setCode(ERROR);
     }
 }

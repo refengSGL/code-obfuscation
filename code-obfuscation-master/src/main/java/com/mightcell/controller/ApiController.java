@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.io.FilenameUtils;
+import org.omg.PortableInterceptor.SUCCESSFUL;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static com.mightcell.constant.ResultCode.*;
 
 /**
  * @author: MightCell
@@ -58,15 +61,15 @@ public class ApiController {
     public SaResult getFileList() {
         List<FileVo> files = apiService.getFileInfoByUserId();
         if (!Objects.isNull(files)) {
-            return SaResult.ok("获取成功").setData(files);
+            return SaResult.ok("获取成功").setData(files).setCode(SUCCESS);
         }
 
-        return SaResult.error("获取失败");
+        return SaResult.error("获取失败").setCode(ERROR);
     }
 
     /**
      * 根据文件ID查询文件信息
-     * @param fileId
+     * @param fileId 文件id
      * @return 文件信息
      */
     @GetMapping("/file/id/{fileId}")
@@ -77,9 +80,9 @@ public class ApiController {
         }
         FileVo safetyFile = apiService.getFileInfoByFileId(fileId);
         if (!Objects.isNull(safetyFile)) {
-            return SaResult.ok("获取成功").setData(safetyFile);
+            return SaResult.ok("获取成功").setData(safetyFile).setCode(SUCCESS);
         }
-        return SaResult.error("获取失败");
+        return SaResult.error("获取失败").setCode(ERROR);
     }
 
 
@@ -99,6 +102,9 @@ public class ApiController {
         // 对上传的文件名进行验证和过滤
         // 只允许字母、数字、下划线和短横线
         String originalFilename = file.getOriginalFilename();
+        if (Objects.isNull(originalFilename)) {
+            throw new CodeException("上传文件名为空");
+        }
         String pattern = "^[a-zA-Z0-9_-]+\\.[a-zA-Z0-9]+$";
         if (!originalFilename.matches(pattern)) {
             log.info("The upload file name contains invalid characters");
@@ -112,10 +118,6 @@ public class ApiController {
         }
         // 替换双引号
         StringUtils.replaceChars(originalFilename, "\"", "_");
-        if (!originalFilename.equals(safeFilename)) {
-            log.info("The upload file name contains special characters");
-            throw new CodeException("上传文件名包含特殊字符");
-        }
         Tika tika = new Tika();
         String mimeType = tika.detect(file.getInputStream());
         log.info("The MIME type of the current file is : {}", mimeType);
@@ -133,9 +135,9 @@ public class ApiController {
 
         FileVo safetyFile = apiService.uploadFile(file, uploadPath);
         if (!Objects.isNull(safetyFile)) {
-            return SaResult.ok("文件上传成功").setData(safetyFile);
+            return SaResult.ok("文件上传成功").setData(safetyFile).setCode(SUCCESS);
         }
-        return SaResult.error("文件上传失败");
+        return SaResult.error("文件上传失败").setCode(ERROR);
     }
 
     /**
@@ -151,7 +153,7 @@ public class ApiController {
             throw new CodeException("文件名为空");
         }
         apiService.downloadFile(fileName, uploadPath, response);
-        return SaResult.ok("文件下载成功");
+        return SaResult.ok("文件下载成功").setCode(NO_CONTENT);
     }
 
     /**
@@ -173,9 +175,9 @@ public class ApiController {
         log.info("参数列表paramList为：{}", paramList);
         FileVo safetyFile = apiService.performProtectionOperation(fileName, paramList);
         if (!Objects.isNull(safetyFile)) {
-            return SaResult.ok("文件保护成功").setData(safetyFile);
+            return SaResult.ok("文件保护成功").setData(safetyFile).setCode(SUCCESS);
         }
-        return SaResult.error("文件保护失败");
+        return SaResult.error("文件保护失败").setCode(ERROR);
     }
 
     /**
@@ -188,9 +190,9 @@ public class ApiController {
         return getResultByFileName(fileName, (name) -> {
             FileVo safetyFile = apiService.getFileInfoByFileName(name);
             if (!Objects.isNull(safetyFile)) {
-                return SaResult.ok("获取成功").setData(safetyFile);
+                return SaResult.ok("获取成功").setData(safetyFile).setCode(SUCCESS);
             }
-            return SaResult.error("获取失败");
+            return SaResult.error("获取失败").setCode(ERROR);
         });
     }
 
@@ -207,14 +209,14 @@ public class ApiController {
         }
         Page<PageVo> pageInfo = apiService.getPageVoInfo(pageBo);
         if (!Objects.isNull(pageInfo)) {
-            return SaResult.ok("获取成功").setData(pageInfo);
+            return SaResult.ok("获取成功").setData(pageInfo).setCode(SUCCESS);
         }
-        return SaResult.error("获取失败");
+        return SaResult.error("获取失败").setCode(ERROR);
     }
 
     /**
      * 测试原始文件信息内容
-     * @param pageBo
+     * @param pageBo 页面分页查询参数接收类
      * @return 原始文件的内容
      */
     @GetMapping("/file/test")
@@ -225,7 +227,7 @@ public class ApiController {
         LambdaQueryWrapper<File> fileLambdaQueryWrapper = new LambdaQueryWrapper<>();
         fileLambdaQueryWrapper.orderByDesc(File::getUpdateTime);
         apiService.page(pageInfo, fileLambdaQueryWrapper);
-        return SaResult.ok("获取成功").setData(pageInfo);
+        return SaResult.ok("获取成功").setData(pageInfo).setCode(SUCCESS);
     }
 
     /**
@@ -238,9 +240,9 @@ public class ApiController {
         return getResultByFileName(fileName, (name) -> {
             boolean isDeleted = apiService.deleteFileByFileName(name);
             if (isDeleted) {
-                return SaResult.ok("删除成功");
+                return SaResult.ok("删除成功").setCode(MOVE_PERM);
             }
-            return SaResult.error("删除失败");
+            return SaResult.error("删除失败").setCode(NOT_MODIFIED);
         });
     }
 
@@ -253,9 +255,9 @@ public class ApiController {
     public SaResult removeByFileId(@PathVariable Long fileId) {
         boolean isDeleted = apiService.deleteFileByFileId(fileId);
         if (isDeleted) {
-            return SaResult.ok("删除成功");
+            return SaResult.ok("删除成功").setCode(MOVE_PERM);
         }
-        return SaResult.error("删除失败");
+        return SaResult.error("删除失败").setCode(NOT_MODIFIED);
     }
 
     /**
@@ -284,7 +286,7 @@ public class ApiController {
                             @NotNull @PathVariable int pType,
                             @NotNull @RequestBody List<String> arguments) {
         FileVo safetyFile = apiService.executeShell(fileName, pType, arguments);
-        return SaResult.ok("保护成功").setData(safetyFile);
+        return SaResult.ok("保护成功").setData(safetyFile).setCode(SUCCESS);
     }
 
     /**
@@ -296,9 +298,9 @@ public class ApiController {
     public SaResult removeRows(@RequestBody List<String> idList) {
         boolean result = apiService.removeRowsByIds(idList);
         if (result) {
-            return SaResult.ok("删除成功");
+            return SaResult.ok("删除成功").setCode(MOVE_PERM);
         }
-        return SaResult.error("数据不存在");
+        return SaResult.error("数据不存在").setCode(ERROR);
     }
 
     /**
@@ -310,7 +312,7 @@ public class ApiController {
     public SaResult countRegisterNum(@PathVariable String day) {
         log.info("Start to count the register number of the day");
         Integer num = apiService.countRegisterNum(day);
-        return SaResult.ok("获取成功").setData(num);
+        return SaResult.ok("获取成功").setData(num).setCode(SUCCESS);
     }
 
     /**
@@ -321,9 +323,9 @@ public class ApiController {
     public SaResult countCurrentLoginNum() {
         Integer num = apiService.countLoginNum();
         if (!Objects.isNull(num)) {
-            return SaResult.ok("获取成功").setData(num);
+            return SaResult.ok("获取成功").setData(num).setCode(SUCCESS);
         }
-        return SaResult.ok("获取失败");
+        return SaResult.ok("获取失败").setCode(ERROR);
     }
 
     /**
@@ -334,7 +336,7 @@ public class ApiController {
     public SaResult countUploadFileNum(@PathVariable String day) {
         log.info("Start to count the upload file number of the day");
         Integer num = apiService.countFileUploadNum(day);
-        return SaResult.ok("获取成功").setData(num);
+        return SaResult.ok("获取成功").setData(num).setCode(SUCCESS);
     }
 
     /**
@@ -346,7 +348,7 @@ public class ApiController {
     public SaResult countProtectFileNum(@PathVariable String day) {
         log.info("Start to count the protect file number of the day");
         Integer num = apiService.countFileProtectNum(day);
-        return SaResult.ok("获取成功").setData(num);
+        return SaResult.ok("获取成功").setData(num).setCode(SUCCESS);
     }
 
 }

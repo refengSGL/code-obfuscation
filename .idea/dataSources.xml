@@ -8,5 +8,13 @@
       <jdbc-url>jdbc:mysql://8.130.113.197:3306/code_obfuscation</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="opaque" uuid="6a656463-a026-43a7-ae54-71e4365e714d">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <remarks>服务器-张然</remarks>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://8.130.113.197:3306/code_obfuscation</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
